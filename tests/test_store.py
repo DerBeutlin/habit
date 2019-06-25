@@ -5,15 +5,27 @@ import tempfile
 import os
 import shutil
 import pytest
+from git import Repo
+from git.exc import InvalidGitRepositoryError
 
 from habit.store import DataStore
 
 
-def test_datastore_raises_error_if_directory_does_not_exists():
+@pytest.fixture
+def empty_folder():
     path = tempfile.mkdtemp()
-    os.rmdir(path)
+
+    def fin():
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+    return path
+
+
+def test_datastore_raises_error_if_directory_does_not_exists(empty_folder):
+    os.rmdir(empty_folder)
     with pytest.raises(FileNotFoundError):
-        _ = DataStore(path)
+        _ = DataStore(empty_folder)
 
 
 def test_datastore_raises_error_if_path_is_not_a_directory():
@@ -23,19 +35,17 @@ def test_datastore_raises_error_if_path_is_not_a_directory():
     os.remove(path)
 
 
+def test_datastore_raises_error_if_not_a_git_repository(empty_folder):
+    with pytest.raises(InvalidGitRepositoryError):
+        _ = DataStore(empty_folder)
+
+
+def test_datastore_can_be_initialized_and_creates_a_git_repository(
+        empty_folder):
+    _ = DataStore.init(empty_folder)
+    assert os.path.exists(os.path.join(empty_folder, '.git'))
+
+
 @pytest.fixture
-def datastore():
-    path = tempfile.mkdtemp()
-
-    def fin():
-        shutil.rmtree(path)
-
-    return DataStore(path)
-
-
-def test_datastore_can_be_initialized_with_an_existing_directory(datastore):
-    pass
-
-
-def test_datastore_creates_git_repository_at_path(datastore):
-    assert os.path.isdir(os.path.join(datastore.path, '.git'))
+def empty_datastore(empty_folder):
+    return DataStore.init(empty_folder)
