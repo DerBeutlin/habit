@@ -23,7 +23,7 @@ class Goal():
         else:
             self.datapoints = datapoints
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         return self.__hash__() == hash(other)
 
     def __hash__(self):
@@ -47,14 +47,20 @@ class Goal():
                 'reference_points':
                 [dict(p._asdict()) for p in self.reference_points],
                 'datapoints': [dict(p._asdict()) for p in self.datapoints],
+                'hash':
+                self.__hash__(),
             }, f)
 
     def fromYAML(path):
         with open(path) as f:
             data = yaml.safe_load(f)
-        return Goal(
-            name=data['name'],
-            pledge=data['pledge'],
-            active=data['active'],
-            reference_points=tuple([Point(**p) for p in data['reference_points']]),
-            datapoints=tuple([Point(**p) for p in data['datapoints']]))
+        goal = Goal(
+            name=data.get('name'),
+            pledge=data.get('pledge'),
+            active=data.get('active'),
+            reference_points=tuple(
+                [Point(**p) for p in data.get('reference_points')]),
+            datapoints=tuple([Point(**p) for p in data.get('datapoints')]))
+        if hash(goal) != data.get('hash'):
+            raise ValueError('Hash in Yaml does not fit the data')
+        return goal

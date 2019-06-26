@@ -79,6 +79,8 @@ def test_can_write_goal_to_yaml(one_goal, tmpfile):
     assert data.get('datapoints') == [
         dict(p._asdict()) for p in one_goal.datapoints
     ]
+    assert data.get('hash') is not None
+
 
 @pytest.fixture
 def one_goal_clone(one_goal):
@@ -86,30 +88,49 @@ def one_goal_clone(one_goal):
                 one_goal.active, one_goal.datapoints)
 
 
-def test_hash_of_goals_with_same_data_are_the_same(one_goal,one_goal_clone):
+def test_hash_of_goals_with_same_data_are_the_same(one_goal, one_goal_clone):
     assert hash(one_goal_clone) == hash(one_goal)
 
 
-def test_hash_of_goals_with_different_name_are_not_the_same(one_goal,one_goal_clone):
+def test_hash_of_goals_with_different_name_are_not_the_same(
+        one_goal, one_goal_clone):
     one_goal_clone.name = "bar"
     assert hash(one_goal_clone) != hash(one_goal)
 
-def test_hash_of_goals_with_different_pledge_are_not_the_same(one_goal,one_goal_clone):
+
+def test_hash_of_goals_with_different_pledge_are_not_the_same(
+        one_goal, one_goal_clone):
     one_goal_clone.pledge += 1
     assert hash(one_goal_clone) != hash(one_goal)
 
-def test_hash_of_goals_with_different_active_are_not_the_same(one_goal,one_goal_clone):
+
+def test_hash_of_goals_with_different_active_are_not_the_same(
+        one_goal, one_goal_clone):
     one_goal_clone.active = False
     assert hash(one_goal_clone) != hash(one_goal)
 
-def test_hash_of_goals_with_different_reference_points_are_not_the_same(one_goal,one_goal_clone):
-    one_goal_clone.reference_points = tuple(list(one_goal_clone.reference_points) + [Point(stamp=0,value=0,comment='')])
+
+def test_hash_of_goals_with_different_reference_points_are_not_the_same(
+        one_goal, one_goal_clone):
+    one_goal_clone.reference_points = tuple(
+        list(one_goal_clone.reference_points) +
+        [Point(stamp=0, value=0, comment='')])
     assert hash(one_goal_clone) != hash(one_goal)
 
 
-
-
-def test_can_parse_goal_from_yaml(one_goal,tmpfile):
+def test_can_parse_goal_from_yaml(one_goal, tmpfile):
     one_goal.toYAML(tmpfile)
     clone = Goal.fromYAML(tmpfile)
     assert one_goal == clone
+
+
+def test_parse_from_yaml_raises_error_if_hash_is_not_correct(
+        one_goal, tmpfile):
+    one_goal.toYAML(tmpfile)
+    with open(tmpfile) as f:
+        data = yaml.safe_load(f)
+    data['hash'] = hash("foobar")
+    with open(tmpfile, 'w') as f:
+        yaml.dump(data, f)
+    with pytest.raises(ValueError):
+        Goal.fromYAML(tmpfile)
