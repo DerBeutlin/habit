@@ -9,19 +9,13 @@ class Goal():
                  name,
                  pledge,
                  reference_points,
-                 active=None,
-                 datapoints=None):
+                 active=True,
+                 datapoints=()):
         self.name = name
         self.pledge = pledge
-        if active is None:
-            self.active = True
-        else:
-            self.active = active
+        self.active = active
         self.reference_points = reference_points
-        if datapoints is None:
-            self.datapoints = ()
-        else:
-            self.datapoints = datapoints
+        self.datapoints = datapoints
 
     def value(self):
         return sum(p.value for p in self.datapoints)
