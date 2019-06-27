@@ -7,6 +7,7 @@ import shutil
 import pytest
 from git import Repo
 from git.exc import InvalidGitRepositoryError
+from tests.test_goal import dummy_goal
 
 from habit.store import DataStore
 
@@ -49,3 +50,17 @@ def test_datastore_can_be_initialized_and_creates_a_git_repository(
 @pytest.fixture
 def empty_datastore(empty_folder):
     return DataStore.init(empty_folder)
+
+
+@pytest.fixture
+def one_goal_datastore(empty_datastore, dummy_goal):
+    empty_datastore.add_goal(dummy_goal)
+    return empty_datastore
+
+
+def test_add_goal_results_in_creation_of_yaml_file(one_goal_datastore):
+    assert os.path.exists(os.path.join(one_goal_datastore.path, 'Dummy.yaml'))
+
+
+def test_add_goal_results_in_clean_git_repo(one_goal_datastore):
+    assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
