@@ -15,6 +15,8 @@ class DataStore:
         return self.repo.working_tree_dir
 
     def init(path):
+        if os.path.exists(os.path.join(path,'.git')):
+            raise FileExistsError('Directory {} is already a git repository.'.format(path))
         Repo.init(path)
         return DataStore(path)
 

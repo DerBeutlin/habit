@@ -47,9 +47,14 @@ def test_datastore_can_be_initialized_and_creates_a_git_repository(
     assert os.path.exists(os.path.join(empty_folder, '.git'))
 
 
+
 @pytest.fixture
 def empty_datastore(empty_folder):
     return DataStore.init(empty_folder)
+
+def test_init_in_git_repo_fails(empty_datastore):
+    with pytest.raises(FileExistsError):
+        DataStore.init(empty_datastore.path)
 
 
 @pytest.fixture
