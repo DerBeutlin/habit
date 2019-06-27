@@ -47,6 +47,12 @@ def test_one_can_add_multiple_datapoints_and_they_are_ordered_in_time(
     assert dummy_goal.datapoints[0] == earlier_point
     assert dummy_goal.datapoints[1] == later_point
 
+def test_one_can_add_reference_points_and_they_are_ordered_in_time(
+        dummy_goal):
+    earlier_point = Point(stamp=time.time()-24*60*60, value=-1, comment='')
+    dummy_goal.add_reference_point(earlier_point)
+    assert len(dummy_goal.reference_points) == 3
+    assert dummy_goal.reference_points[0] == earlier_point
 
 @pytest.fixture
 def one_goal(dummy_goal):
@@ -135,6 +141,7 @@ def test_parse_from_yaml_raises_error_if_hash_is_not_correct(
     with pytest.raises(ValueError):
         Goal.fromYAML(tmpfile)
 
+
 def test_value_for_simple_cumulative_goal_is_correct(dummy_goal):
     assert dummy_goal.value() == 0
     point = Point(stamp=time.time(), value=1, comment='')
@@ -143,3 +150,17 @@ def test_value_for_simple_cumulative_goal_is_correct(dummy_goal):
     point = Point(stamp=time.time(), value=100, comment='')
     dummy_goal.add_point(point)
     assert dummy_goal.value() == 101
+
+
+def test_remaining_time_is_correct_for_simple_line(one_goal):
+    expected_time = one_goal.reference_points[1].stamp - time.time()
+    assert abs(one_goal.time_remaining(time.time()) - expected_time) < 0.1
+
+
+def test_remaining_time_is_correct_more_complex_line(one_goal):
+    point = Point(stamp=time.time()+2*24*60*60, value=10, comment='')
+    one_goal.add_reference_point(point)
+    point = Point(stamp=time.time()-24*60*60, value=-10, comment='')
+    one_goal.add_reference_point(point)
+    expected_time = one_goal.reference_points[-2].stamp - time.time()
+    assert abs(one_goal.time_remaining(time.time()) - expected_time) < 0.1

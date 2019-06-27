@@ -4,6 +4,13 @@ import yaml
 Point = namedtuple('Point', ['stamp', 'value', 'comment'])
 
 
+def add_point_to_sorted_tuple(t, p):
+    new_t = list(t) + [p]
+    new_t.sort(key=lambda d: d.stamp)
+    return tuple(new_t)
+
+
+
 class Goal():
     def __init__(self,
                  name,
@@ -28,9 +35,20 @@ class Goal():
                      self.reference_points, self.datapoints))
 
     def add_point(self, point):
-        datapoints = (list(self.datapoints) + [point])
-        datapoints.sort(key=lambda d: d.stamp)
-        self.datapoints = tuple(datapoints)
+        self.datapoints = add_point_to_sorted_tuple(self.datapoints, point)
+
+    def add_reference_point(self, point):
+        self.reference_points = add_point_to_sorted_tuple(
+            self.reference_points, point)
+
+    def time_remaining(self, now):
+        for start_point, end_point in zip(self.reference_points[:-1],
+                                          self.reference_points[1:]):
+            if end_point.stamp < now:
+                continue
+            slope = (end_point.value - start_point.value) / (
+                end_point.stamp - start_point.stamp)
+            return (self.value() - start_point.value) / slope
 
     def toYAML(self, path):
         with open(path, 'w') as f:
