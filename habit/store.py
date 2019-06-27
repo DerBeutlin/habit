@@ -19,10 +19,13 @@ class DataStore:
         return DataStore(path)
 
     def add_goal(self, goal):
+        self.update_goal(goal, "Added {} Goal.".format(goal.name))
+
+    def update_goal(self, goal, commit_msg):
         filename = os.path.join(self.path, '{}.yaml'.format(goal.name))
         goal.toYAML(filename)
         self.repo.index.add([filename])
-        self.repo.index.commit("Added {} Goal.".format(goal.name))
+        self.repo.index.commit(commit_msg)
 
     def list_goal_names(self):
         goals = []
