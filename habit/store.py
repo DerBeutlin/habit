@@ -15,10 +15,20 @@ class DataStore:
         Repo.init(path)
         return DataStore(path)
 
-    def add_goal(self,goal):
-        filename = os.path.join(self.path,'{}.yaml'.format(goal.name))
+    def add_goal(self, goal):
+        filename = os.path.join(self.path, '{}.yaml'.format(goal.name))
         goal.toYAML(filename)
         self.repo.index.add([filename])
         self.repo.index.commit("Added {} Goal.".format(goal.name))
 
-    # def list_goal_names(self):
+    def list_goal_names(self):
+        goals = []
+        for f in os.listdir(self.path):
+            file_path = os.path.join(self.path, f)
+            if not os.path.isfile(file_path):
+                continue
+            goal_name, extension = os.path.splitext(f)
+            if not extension == '.yaml':
+                continue
+            goals.append(goal_name)
+        return goals

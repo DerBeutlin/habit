@@ -64,3 +64,19 @@ def test_add_goal_results_in_creation_of_yaml_file(one_goal_datastore):
 
 def test_add_goal_results_in_clean_git_repo(one_goal_datastore):
     assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
+
+
+def test_add_goal_results_having_one_goal(one_goal_datastore):
+    assert len(one_goal_datastore.list_goal_names()) == 1
+
+
+def test_random_other_files_are_not_counted_as_goals(one_goal_datastore):
+    with open(os.path.join(one_goal_datastore.path, 'foobar.txt'), 'w'):
+        pass
+    assert len(one_goal_datastore.list_goal_names()) == 1
+
+
+def test_correctly_named_directories_are_not_counted_as_goals(
+        one_goal_datastore):
+    os.mkdir(os.path.join(one_goal_datastore.path, 'foobar.yaml'))
+    assert len(one_goal_datastore.list_goal_names()) == 1
