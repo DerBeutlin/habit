@@ -9,7 +9,10 @@ class DataStore:
         if not os.path.isdir(path):
             raise NotADirectoryError('{} is not a directoy'.format(path))
         self.repo = Repo(path)
-        self.path = path
+
+    @property
+    def path(self):
+        return self.repo.working_tree_dir
 
     def init(path):
         Repo.init(path)
