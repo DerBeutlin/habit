@@ -23,6 +23,9 @@ class Goal():
         else:
             self.datapoints = datapoints
 
+    def value(self):
+        return sum(p.value for p in self.datapoints)
+
     def __eq__(self, other):
         return self.__hash__() == hash(other)
 

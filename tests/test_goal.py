@@ -134,3 +134,12 @@ def test_parse_from_yaml_raises_error_if_hash_is_not_correct(
         yaml.dump(data, f)
     with pytest.raises(ValueError):
         Goal.fromYAML(tmpfile)
+
+def test_value_for_simple_cumulative_goal_is_correct(dummy_goal):
+    assert dummy_goal.value() == 0
+    point = Point(stamp=time.time(), value=1, comment='')
+    dummy_goal.add_point(point)
+    assert dummy_goal.value() == 1
+    point = Point(stamp=time.time(), value=100, comment='')
+    dummy_goal.add_point(point)
+    assert dummy_goal.value() == 101
