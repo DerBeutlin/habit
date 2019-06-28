@@ -15,12 +15,16 @@ class DataStore:
         return self.repo.working_tree_dir
 
     def init(path):
-        if os.path.exists(os.path.join(path,'.git')):
-            raise FileExistsError('Directory {} is already a git repository.'.format(path))
+        if os.path.exists(os.path.join(path, '.git')):
+            raise FileExistsError(
+                'Directory {} is already a git repository.'.format(path))
         Repo.init(path)
         return DataStore(path)
 
     def add_goal(self, goal):
+        if goal.name in self.list_goal_names():
+            raise ValueError('A goal with name {} already exists'.format(
+                goal.name))
         self.update_goal(goal, "Added {} Goal.".format(goal.name))
 
     def update_goal(self, goal, commit_msg):
