@@ -10,7 +10,6 @@ def add_point_to_sorted_tuple(t, p):
     return tuple(new_t)
 
 
-
 class Goal():
     def __init__(self,
                  name,
@@ -46,9 +45,10 @@ class Goal():
                                           self.reference_points[1:]):
             if end_point.stamp < now:
                 continue
-            slope = (end_point.value - start_point.value) / (
-                end_point.stamp - start_point.stamp)
-            return (self.value() - start_point.value) / slope
+            dy = end_point.value - start_point.value
+            dx = end_point.stamp - start_point.stamp
+
+            return ((self.value() - start_point.value) / dy) * dx
 
     def toYAML(self, path):
         with open(path, 'w') as f:
