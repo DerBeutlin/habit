@@ -1,4 +1,6 @@
 from collections import namedtuple
+import datetime as dt
+from dateutil.relativedelta import relativedelta
 import yaml
 
 Point = namedtuple('Point', ['stamp', 'value', 'comment'])
@@ -79,3 +81,11 @@ class Goal():
         if hash(goal) != data.get('hash'):
             raise ValueError('Hash in Yaml does not fit the data')
         return goal
+
+
+def create_goal(name, daily_slope, pledge):
+    now = dt.datetime.now()
+    p1 = Point(stamp=now, value=0, comment='')
+    end = now + relativedelta(years=10)
+    p2 = Point(stamp=end, value=(end - now).days * daily_slope, comment='')
+    return Goal(name=name, reference_points=(p1, p2), pledge=pledge)

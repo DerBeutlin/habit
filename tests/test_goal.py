@@ -1,5 +1,5 @@
 import pytest
-from habit.goal import Goal, Point
+from habit.goal import Goal, Point, create_goal
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import tempfile
@@ -171,3 +171,18 @@ def test_remaining_time_is_correct_more_complex_line(one_goal):
     expected_time = one_goal.reference_points[-2].stamp - dt.datetime.now()
     assert abs(one_goal.time_remaining(dt.datetime.now()) -
                expected_time) < dt.timedelta(seconds=1)
+
+
+def test_create_goal_from_slope():
+    goal = create_goal(name='Dummy', daily_slope=10, pledge=10)
+    assert goal.name == 'Dummy'
+    assert goal.pledge == 10
+    assert goal.active
+    assert len(goal.datapoints) == 0
+    assert len(goal.reference_points) == 2
+    p1, p2 = goal.reference_points
+    assert (p1.stamp - dt.datetime.now()) < dt.timedelta(seconds=1)
+    assert (p2.stamp - (dt.datetime.now() +
+                        relativedelta(years=10))) < dt.timedelta(seconds=1)
+    assert p1.value == 0
+    assert p2.value == (p2.stamp - p1.stamp).days * 10
