@@ -88,7 +88,6 @@ def test_can_write_goal_to_yaml(one_goal, tmpfile):
     assert data.get('datapoints') == [
         dict(p._asdict()) for p in one_goal.datapoints
     ]
-    assert data.get('hash') is not None
 
 
 @pytest.fixture
@@ -131,19 +130,6 @@ def test_can_parse_goal_from_yaml(one_goal, tmpfile):
     one_goal.toYAML(tmpfile)
     clone = Goal.fromYAML(tmpfile)
     assert one_goal == clone
-
-
-def test_parse_from_yaml_raises_error_if_hash_is_not_correct(
-        one_goal, tmpfile):
-    one_goal.toYAML(tmpfile)
-    with open(tmpfile) as f:
-        data = yaml.safe_load(f)
-    data['hash'] = hash("foobar")
-    with open(tmpfile, 'w') as f:
-        yaml.dump(data, f)
-    with pytest.raises(ValueError):
-        Goal.fromYAML(tmpfile)
-
 
 def test_value_for_simple_cumulative_goal_is_correct(dummy_goal):
     assert dummy_goal.value() == 0

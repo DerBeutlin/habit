@@ -64,8 +64,6 @@ class Goal():
                 'reference_points':
                 [dict(p._asdict()) for p in self.reference_points],
                 'datapoints': [dict(p._asdict()) for p in self.datapoints],
-                'hash':
-                self.__hash__(),
             }, f)
 
     def fromYAML(path):
@@ -78,8 +76,6 @@ class Goal():
             reference_points=tuple(
                 [Point(**p) for p in data.get('reference_points')]),
             datapoints=tuple([Point(**p) for p in data.get('datapoints')]))
-        if hash(goal) != data.get('hash'):
-            raise ValueError('Hash in Yaml does not fit the data')
         return goal
 
 
