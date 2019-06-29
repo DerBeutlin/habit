@@ -91,3 +91,14 @@ def test_correctly_named_directories_are_not_counted_as_goals(
         one_goal_datastore):
     os.mkdir(os.path.join(one_goal_datastore.path, 'foobar.yaml'))
     assert len(one_goal_datastore.list_goal_names()) == 1
+
+
+def test_store_can_load_goal(one_goal_datastore):
+    goal = one_goal_datastore.load_goal('Dummy')
+    assert goal.name == 'Dummy'
+
+
+def test_store_raises_error_when_loading_a_nonexistent_goal(
+        one_goal_datastore):
+    with pytest.raises(KeyError):
+        one_goal_datastore.load_goal('Dummy2')

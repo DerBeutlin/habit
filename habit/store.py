@@ -1,5 +1,6 @@
 import os
 from git import Repo
+from habit.goal import Goal
 
 
 class DataStore:
@@ -28,7 +29,7 @@ class DataStore:
         self.update_goal(goal, "Added {} Goal.".format(goal.name))
 
     def update_goal(self, goal, commit_msg):
-        filename = os.path.join(self.path, '{}.yaml'.format(goal.name))
+        filename = self.get_path_to_goal(goal.name)
         goal.toYAML(filename)
         self.repo.index.add([filename])
         self.repo.index.commit(commit_msg)
@@ -44,3 +45,12 @@ class DataStore:
                 continue
             goals.append(goal_name)
         return goals
+
+    def get_path_to_goal(self, name):
+        return os.path.join(self.path, '{}.yaml'.format(name))
+
+    def load_goal(self, name):
+        if not name in self.list_goal_names():
+            raise KeyError(
+                'There is no goal named {} in this store'.format(name))
+        return Goal.fromYAML(self.get_path_to_goal(name))
