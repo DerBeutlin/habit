@@ -6,6 +6,8 @@ from habit.goal import create_goal
 import os
 import tabulate
 import multiprocessing.dummy
+import sys
+import datetime as dt
 
 
 @click.group()
@@ -32,12 +34,15 @@ def new(name, slope, pledge):
 def list():
     store = DataStore(os.getcwd())
     goals = load_goals(store)
-    table = [[goal.name, goal.pledge] for goal in goals]
-    print(tabulate(table))
+    table = [[goal.name, goal.pledge, goal.time_remaining(dt.datetime.now())] for goal in goals]
+    print(tabulate.tabulate(table))
 
 
 def load_goals(store):
     names = store.list_goal_names()
-    print(names)
-    # pool = multiprocessing.dummy.Pool(len(names))
-    # return pool.map(lambda name: store.load_goal(name), names)
+    pool = multiprocessing.dummy.Pool(len(names))
+    return pool.map(lambda name: store.load_goal(name), names)
+
+
+if __name__ == "__main__":
+    sys.exit(main())  # pragma: no cover

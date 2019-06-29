@@ -9,7 +9,7 @@ import os
 
 @pytest.fixture
 def dummy_goal():
-    reference_points = (Point(stamp=dt.datetime.now(), value=0, comment=''),
+    reference_points = (Point(stamp=dt.datetime.now()+relativedelta(minutes=-1), value=0, comment=''),
                         Point(
                             stamp=dt.datetime.now() + relativedelta(days=1),
                             value=1,
