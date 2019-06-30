@@ -32,16 +32,17 @@ def new(name, slope, pledge):
 
 @main.command()
 def list():
-    store = DataStore(os.getcwd())
-    goals = load_goals(store)
+    goals = load_goals()
     table = [[goal.name, goal.pledge, goal.time_remaining(dt.datetime.now())] for goal in goals]
     print(tabulate.tabulate(table))
 
 
-def load_goals(store):
+def load_goals():
+    store = DataStore(os.getcwd())
     names = store.list_goal_names()
     pool = multiprocessing.dummy.Pool(len(names))
     return pool.map(lambda name: store.load_goal(name), names)
+
 
 
 if __name__ == "__main__":

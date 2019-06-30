@@ -50,7 +50,8 @@ class Goal():
             dy = end_point.value - start_point.value
             dx = end_point.stamp - start_point.stamp
 
-            return (((self.value() - start_point.value) / dy) * dx)-(now-start_point.stamp)
+            return (((self.value() - start_point.value) / dy) * dx) - (
+                now - start_point.stamp)
 
     def toYAML(self, path):
         with open(path, 'w') as f:
