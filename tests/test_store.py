@@ -105,10 +105,11 @@ def test_store_raises_error_when_loading_a_nonexistent_goal(
     with pytest.raises(KeyError):
         one_goal_datastore.load_goal('Dummy2')
 
+
 def test_store_can_add_datapoint_and_make_a_commit(one_goal_datastore):
     old_head_commit = one_goal_datastore.repo.head.commit
-    point = Point(value=1,stamp=dt.datetime.now(),comment='')
-    one_goal_datastore.add_point('Dummy',point)
+    point = Point(value=1, stamp=dt.datetime.now(), comment='')
+    one_goal_datastore.add_point('Dummy', point)
     assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
     new_head_commit = one_goal_datastore.repo.head.commit
     assert old_head_commit != new_head_commit
