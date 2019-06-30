@@ -28,6 +28,11 @@ class DataStore:
                 goal.name))
         self.update_goal(goal, "Added {} Goal.".format(goal.name))
 
+    def add_point(self, name, point):
+        goal = self.load_goal(name)
+        goal.add_point(point)
+        self.update_goal(goal, 'Added datapoint to {} Goal.'.format(goal.name))
+
     def update_goal(self, goal, commit_msg):
         filename = self.get_path_to_goal(goal.name)
         goal.toYAML(filename)
