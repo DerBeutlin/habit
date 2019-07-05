@@ -15,6 +15,7 @@ def test_init_creates_a_git_repository(runner):
         result = runner.invoke(main, ['init'])
         assert result.exit_code == 0
         assert os.path.exists('.git')
+        assert "Habit Store initialized successfully!" in result.output
 
 
 def test_add_goal(runner):

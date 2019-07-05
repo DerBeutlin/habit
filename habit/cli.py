@@ -18,6 +18,7 @@ def main(args=None):
 @main.command()
 def init():
     DataStore.init(os.getcwd())
+    print('Habit Store initialized successfully!')
 
 
 @main.command()
