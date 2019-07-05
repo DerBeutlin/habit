@@ -2,7 +2,7 @@
 """Console script for habit."""
 import click
 from habit.store import DataStore
-from habit.goal import create_goal, create_point
+from habit.goal import create_goal, create_point,point_hash
 import os
 import tabulate
 import multiprocessing.dummy
@@ -35,7 +35,7 @@ def new(name, slope, pledge):
 
 
 @main.command()
-def list():
+def goals():
     goals = load_goals()
     table = [[goal.name, goal.pledge,
               goal.time_remaining(dt.datetime.now())] for goal in goals]
@@ -60,6 +60,17 @@ def add(name, value, comment=''):
     goal = store.load_goal(name)
     point = create_point(value=float(value), comment=comment)
     goal.add_point(point)
+
+
+@main.command()
+@click.argument('name')
+def list(name):
+    store = DataStore(os.getcwd())
+    goal = store.load_goal(name)
+    table = [[point_hash(d), d.value,
+              d.stamp.isoformat(), d.comment] for d in goal.datapoints]
+    print(
+        tabulate.tabulate(table, headers=['Hash', 'Value', 'Time', 'Comment']))
 
 
 if __name__ == "__main__":
