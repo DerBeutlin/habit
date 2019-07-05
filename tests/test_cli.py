@@ -47,14 +47,21 @@ def test_add_goal_with_parameter(runner):
             1].value
 
 
-# def test_list_goals(runner):
-#     with runner.isolated_filesystem():
-#         runner.invoke(main, ['init'])
-#         runner.invoke(main,
-#                       ['new', 'dummy', '--slope', '10', '--pledge', '10'])
-#         runner.invoke(main,
-#                       ['new', 'foobar', '--slope', '10', '--pledge', '20'])
-#         result = runner.invoke(main, ['list'])
-#         assert result.exit_code == 0
-#         assert "dummy" in result.output
-#         assert "foobar" in result.output
+def test_list_goal_does_not_fail_for_empty_datastores(runner):
+    with runner.isolated_filesystem():
+        runner.invoke(main, ['init'])
+        result = runner.invoke(main, ['list'])
+        assert result.exit_code == 0
+
+
+def test_list_goals(runner):
+    with runner.isolated_filesystem():
+        runner.invoke(main, ['init'])
+        runner.invoke(main,
+                      ['new', 'dummy', '--slope', '10', '--pledge', '10'])
+        runner.invoke(main,
+                      ['new', 'foobar', '--slope', '10', '--pledge', '20'])
+        result = runner.invoke(main, ['list'])
+        assert result.exit_code == 0
+        assert "dummy" in result.output
+        assert "foobar" in result.output

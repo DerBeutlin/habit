@@ -41,6 +41,8 @@ def list():
 def load_goals():
     store = DataStore(os.getcwd())
     names = store.list_goal_names()
+    if not names:
+        return []
     pool = multiprocessing.dummy.Pool(len(names))
     return pool.map(lambda name: store.load_goal(name), names)
 
