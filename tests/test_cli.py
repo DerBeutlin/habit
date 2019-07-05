@@ -77,3 +77,12 @@ def test_can_add_datapoint(run_in_one_goal_store):
     assert result.exit_code == 0
     goal = Goal.fromYAML('dummy.yaml')
     assert len(goal.datapoints) == 1
+    assert goal.datapoints[0].value == 10
+
+def test_can_add_datapoint_with_comment(run_in_one_goal_store):
+    run = run_in_one_goal_store
+    result = run.invoke(main,['add','dummy','10', '-c', 'test'])
+    assert result.exit_code == 0
+    goal = Goal.fromYAML('dummy.yaml')
+    assert len(goal.datapoints) == 1
+    assert goal.datapoints[0].comment == 'test'

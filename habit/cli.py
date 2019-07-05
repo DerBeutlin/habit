@@ -2,7 +2,7 @@
 """Console script for habit."""
 import click
 from habit.store import DataStore
-from habit.goal import create_goal,create_point
+from habit.goal import create_goal, create_point
 import os
 import tabulate
 import multiprocessing.dummy
@@ -54,10 +54,11 @@ def load_goals():
 @main.command()
 @click.argument('name')
 @click.argument('value')
-def add(name, value):
+@click.option('-c', 'comment', default='', help='Comment for the datapoint')
+def add(name, value, comment=''):
     store = DataStore(os.getcwd())
     goal = store.load_goal(name)
-    point = create_point(value=float(value))
+    point = create_point(value=float(value), comment=comment)
     goal.add_point(point)
 
 
