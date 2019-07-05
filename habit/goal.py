@@ -12,6 +12,10 @@ def create_point(value, stamp=None, comment=''):
     return Point(stamp=stamp, value=value, comment=comment)
 
 
+def point_hash(point):
+    return hex(hash(point))[2:10]
+
+
 def add_point_to_sorted_tuple(t, p):
     new_t = list(t) + [p]
     new_t.sort(key=lambda d: d.stamp)
@@ -65,6 +69,20 @@ class Goal():
     @_update("Added datapoint")
     def add_point(self, point):
         self.datapoints = add_point_to_sorted_tuple(self.datapoints, point)
+
+    @_update("Removed datapoint")
+    def remove_point(self, p_hash):
+        candidates = [
+            d for d in self.datapoints if point_hash(d).startswith(p_hash)
+        ]
+        if not candidates:
+            raise KeyError('No match for hash {} found'.format(p_hash))
+        if len(candidates) > 1:
+            raise KeyError('There are multiple matches for hash {}, '.format(
+                p_hash) + ','.join((point_hash(p) for p in candidates)))
+
+        self.datapoints = tuple(
+            d for d in self.datapoints if d != candidates[0])
 
     def add_reference_point(self, point):
         self.reference_points = add_point_to_sorted_tuple(

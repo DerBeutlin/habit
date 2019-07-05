@@ -10,7 +10,7 @@ from git.exc import InvalidGitRepositoryError
 from tests.test_goal import dummy_goal
 
 from habit.store import DataStore
-from habit.goal import Point
+from habit.goal import Point,point_hash
 import datetime as dt
 
 
@@ -113,6 +113,18 @@ def test_store_makes_commit_when_goal_adds_a_datapoint(one_goal_datastore):
     point = Point(value=1, stamp=dt.datetime.now(), comment='')
     goal = one_goal_datastore.load_goal('Dummy')
     goal.add_point(point)
+    assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
+    new_head_commit = one_goal_datastore.repo.head.commit
+    assert old_head_commit != new_head_commit
+    assert new_head_commit.parents[0] == old_head_commit
+
+def test_store_makes_commit_when_goal_removes_a_datapoint(one_goal_datastore):
+    goal = one_goal_datastore.load_goal('Dummy')
+    point = Point(value=1, stamp=dt.datetime.now(), comment='')
+    goal.add_point(point)
+    old_head_commit = one_goal_datastore.repo.head.commit
+    p_hash = point_hash(point)
+    goal.remove_point(p_hash)
     assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
     new_head_commit = one_goal_datastore.repo.head.commit
     assert old_head_commit != new_head_commit

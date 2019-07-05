@@ -1,5 +1,5 @@
 import pytest
-from habit.goal import Goal, Point, create_goal
+from habit.goal import Goal, Point, create_goal,point_hash
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import tempfile
@@ -172,3 +172,19 @@ def test_create_goal_from_slope():
                         relativedelta(years=10))) < dt.timedelta(seconds=1)
     assert p1.value == 0
     assert p2.value == (p2.stamp - p1.stamp).days * 10
+
+def test_can_delete_datapoint_with_part_of_hash(one_goal):
+    point = one_goal.datapoints[0]
+    p_hash = point_hash(point)
+    one_goal.remove_point(p_hash[:-2])
+    assert len(one_goal.datapoints) == 0
+
+def test_can_delete_raises_error_if_hash_does_not_match(one_goal):
+    with pytest.raises(KeyError):
+        one_goal.remove_point('eanetianet')
+
+def test_can_delete_raises_error_if_multiple_hashes_match(one_goal):
+    point = Point(stamp=dt.datetime.now(), value=1, comment='')
+    one_goal.add_point(point)
+    with pytest.raises(KeyError):
+        one_goal.remove_point('')
