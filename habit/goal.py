@@ -6,6 +6,12 @@ import yaml
 Point = namedtuple('Point', ['stamp', 'value', 'comment'])
 
 
+def create_point(value, stamp=None, comment=''):
+    if stamp is None:
+        stamp = dt.datetime.now()
+    return Point(stamp=stamp, value=value, comment=comment)
+
+
 def add_point_to_sorted_tuple(t, p):
     new_t = list(t) + [p]
     new_t.sort(key=lambda d: d.stamp)
@@ -33,9 +39,10 @@ class Goal():
                 if s.store:
                     s.store.update_goal(
                         s, 'Goal {}: {}'.format(s.name, commit_msg))
-            return wrapped_f
-        return wrapper
 
+            return wrapped_f
+
+        return wrapper
 
     @_update("Added.")
     def set_store(self, store):

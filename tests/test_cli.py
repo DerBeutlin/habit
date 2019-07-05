@@ -25,8 +25,6 @@ def run_in_store(runner):
     yield runner
 
 
-
-
 def test_add_goal(run_in_store):
     result = run_in_store.invoke(main, ['new', 'dummy'])
     assert result.exit_code == 0
@@ -57,15 +55,25 @@ def test_list_goal_does_not_fail_for_empty_datastores(run_in_store):
     result = run_in_store.invoke(main, ['list'])
     assert result.exit_code == 0
 
+
 @pytest.yield_fixture
 def run_in_one_goal_store(run_in_store):
     run_in_store.invoke(main, ['new', 'dummy'])
     yield run_in_store
 
+
 def test_list_goals(run_in_one_goal_store):
-    run_in_one_goal_store.invoke(main,
-                        ['new', 'foobar', '--slope', '10', '--pledge', '20'])
+    run_in_one_goal_store.invoke(
+        main, ['new', 'foobar', '--slope', '10', '--pledge', '20'])
     result = run_in_one_goal_store.invoke(main, ['list'])
     assert result.exit_code == 0
     assert "dummy" in result.output
     assert "foobar" in result.output
+
+
+def test_can_add_datapoint(run_in_one_goal_store):
+    run = run_in_one_goal_store
+    result = run.invoke(main, ['add', 'dummy', '10'])
+    assert result.exit_code == 0
+    goal = Goal.fromYAML('dummy.yaml')
+    assert len(goal.datapoints) == 1
