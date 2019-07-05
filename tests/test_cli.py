@@ -30,6 +30,7 @@ def test_add_goal(runner):
         same_goal = create_goal(name='dummy', daily_slope=1, pledge=0)
         assert goal.reference_points[1].value == same_goal.reference_points[
             1].value
+        assert 'Goal named dummy with daily slope of 1 and a pledge of 0€ created successfully!' in result.output
 
 
 def test_add_goal_with_parameter(runner):

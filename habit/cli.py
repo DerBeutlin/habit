@@ -29,12 +29,16 @@ def new(name, slope, pledge):
     store = DataStore(os.getcwd())
     goal = create_goal(name=name, daily_slope=slope, pledge=pledge)
     goal.set_store(store)
+    print(
+        'Goal named {} with daily slope of {} and a pledge of {}€ created successfully!'
+        .format(name, slope, pledge))
 
 
 @main.command()
 def list():
     goals = load_goals()
-    table = [[goal.name, goal.pledge, goal.time_remaining(dt.datetime.now())] for goal in goals]
+    table = [[goal.name, goal.pledge,
+              goal.time_remaining(dt.datetime.now())] for goal in goals]
     print(tabulate.tabulate(table))
 
 
@@ -45,7 +49,6 @@ def load_goals():
         return []
     pool = multiprocessing.dummy.Pool(len(names))
     return pool.map(lambda name: store.load_goal(name), names)
-
 
 
 if __name__ == "__main__":
