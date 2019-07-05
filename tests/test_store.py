@@ -61,14 +61,16 @@ def test_init_in_git_repo_fails(empty_datastore):
 
 @pytest.fixture
 def one_goal_datastore(empty_datastore, dummy_goal):
-    empty_datastore.add_goal(dummy_goal)
+    dummy_goal.set_store(empty_datastore)
     return empty_datastore
 
+def test_one_goal_datastore_has_one_goal(one_goal_datastore):
+    assert len(one_goal_datastore.list_goal_names()) == 1
 
 def test_add_goal_raises_Error_if_goal_with_same_name_exists(
         one_goal_datastore, dummy_goal):
     with pytest.raises(ValueError):
-        one_goal_datastore.add_goal(dummy_goal)
+        dummy_goal.set_store(one_goal_datastore)
 
 
 def test_add_goal_results_in_creation_of_yaml_file(one_goal_datastore):
@@ -106,10 +108,11 @@ def test_store_raises_error_when_loading_a_nonexistent_goal(
         one_goal_datastore.load_goal('Dummy2')
 
 
-def test_store_can_add_datapoint_and_make_a_commit(one_goal_datastore):
+def test_store_makes_commit_when_goal_adds_a_datapoint(one_goal_datastore):
     old_head_commit = one_goal_datastore.repo.head.commit
     point = Point(value=1, stamp=dt.datetime.now(), comment='')
-    one_goal_datastore.add_point('Dummy', point)
+    goal = one_goal_datastore.load_goal('Dummy')
+    goal.add_point(point)
     assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
     new_head_commit = one_goal_datastore.repo.head.commit
     assert old_head_commit != new_head_commit

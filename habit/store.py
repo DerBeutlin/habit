@@ -22,17 +22,6 @@ class DataStore:
         Repo.init(path)
         return DataStore(path)
 
-    def add_goal(self, goal):
-        if goal.name in self.list_goal_names():
-            raise ValueError('A goal with name {} already exists'.format(
-                goal.name))
-        self.update_goal(goal, "Added {} Goal.".format(goal.name))
-
-    def add_point(self, name, point):
-        goal = self.load_goal(name)
-        goal.add_point(point)
-        self.update_goal(goal, 'Added datapoint to {} Goal.'.format(goal.name))
-
     def update_goal(self, goal, commit_msg):
         filename = self.get_path_to_goal(goal.name)
         goal.toYAML(filename)
@@ -58,4 +47,6 @@ class DataStore:
         if not name in self.list_goal_names():
             raise KeyError(
                 'There is no goal named {} in this store'.format(name))
-        return Goal.fromYAML(self.get_path_to_goal(name))
+        goal = Goal.fromYAML(self.get_path_to_goal(name))
+        goal.store = self
+        return goal

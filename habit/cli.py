@@ -27,7 +27,7 @@ def init():
 def new(name, slope, pledge):
     store = DataStore(os.getcwd())
     goal = create_goal(name=name, daily_slope=slope, pledge=pledge)
-    store.add_goal(goal)
+    goal.set_store(store)
 
 
 @main.command()

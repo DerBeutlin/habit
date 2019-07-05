@@ -24,6 +24,26 @@ class Goal():
         self.active = active
         self.reference_points = reference_points
         self.datapoints = datapoints
+        self.store = None
+
+    def _update(commit_msg):
+        def wrapper(func):
+            def wrapped_f(s, *args):
+                func(s, *args)
+                if s.store:
+                    s.store.update_goal(
+                        s, 'Goal {}: {}'.format(s.name, commit_msg))
+            return wrapped_f
+        return wrapper
+
+
+    @_update("Added.")
+    def set_store(self, store):
+        if self.name in store.list_goal_names():
+            raise ValueError(
+                'A goal with name {} already exists in the store'.format(
+                    self.name))
+        self.store = store
 
     def value(self):
         return sum(p.value for p in self.datapoints)
@@ -35,6 +55,7 @@ class Goal():
         return hash((self.name, self.pledge, self.active,
                      self.reference_points, self.datapoints))
 
+    @_update("Added datapoint")
     def add_point(self, point):
         self.datapoints = add_point_to_sorted_tuple(self.datapoints, point)
 
