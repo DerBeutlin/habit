@@ -79,6 +79,7 @@ def test_can_add_datapoint(run_in_one_goal_store):
     goal = Goal.fromYAML('dummy.yaml')
     assert len(goal.datapoints) == 1
     assert goal.datapoints[0].value == 10
+    assert "added successfully" in result.output
 
 
 def test_can_add_datapoint_with_comment(run_in_one_goal_store):
@@ -88,6 +89,7 @@ def test_can_add_datapoint_with_comment(run_in_one_goal_store):
     goal = Goal.fromYAML('dummy.yaml')
     assert len(goal.datapoints) == 1
     assert goal.datapoints[0].comment == 'test'
+    assert "added successfully" in result.output
 
 
 @pytest.yield_fixture

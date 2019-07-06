@@ -77,6 +77,7 @@ def add(name, value, comment=''):
     goal = load_goal(store, name)
     point = create_point(value=float(value), comment=comment)
     goal.add_point(point)
+    print('Point added successfully!')
 
 
 @main.command()
