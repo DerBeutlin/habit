@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 from habit.cli import main
-from habit.goal import Goal, create_goal, point_hash
+from habit.goal import Goal, create_goal
 import os
 import pytest
 import datetime as dt
@@ -96,7 +96,7 @@ def run_in_one_goal_store_with_one_point(run_in_one_goal_store):
     yield run_in_one_goal_store
 
 
-def test_can_list_datapoints_with_hash(run_in_one_goal_store_with_one_point):
+def test_can_list_datapoints_with_uuid(run_in_one_goal_store_with_one_point):
     run = run_in_one_goal_store_with_one_point
     result = run.invoke(main, ['list', 'dummy'])
     assert result.exit_code == 0
@@ -105,13 +105,12 @@ def test_can_list_datapoints_with_hash(run_in_one_goal_store_with_one_point):
     assert dt.datetime.now().strftime('%Y-%m-%d') in result.output
     goal = Goal.fromYAML('dummy.yaml')
     point = goal.datapoints[0]
-    assert point_hash(point) in result.output
+    assert point.uuid[:8] in result.output
 
 def test_can_remove_datapoint_with_hash(run_in_one_goal_store_with_one_point):
     run = run_in_one_goal_store_with_one_point
     goal = Goal.fromYAML('dummy.yaml')
     point = goal.datapoints[0]
-    p_hash = point_hash(point)[:-3]
-    result = run.invoke(main, ['remove', 'dummy',p_hash])
+    result = run.invoke(main, ['remove', 'dummy',point.uuid[:5]])
     assert result.exit_code == 0
     assert 'removed successfully!' in result.output

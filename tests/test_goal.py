@@ -1,5 +1,5 @@
 import pytest
-from habit.goal import Goal, Point, create_goal, point_hash, create_point
+from habit.goal import Goal, Point, create_goal, create_point
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import tempfile
@@ -9,14 +9,13 @@ import os
 
 @pytest.fixture
 def dummy_goal():
-    reference_points = (Point(
+    reference_points = (create_point(
         stamp=dt.datetime.now() + relativedelta(minutes=-1),
         value=0,
-        comment=''),
-                        Point(
-                            stamp=dt.datetime.now() + relativedelta(days=1),
-                            value=1,
-                            comment=''))
+    ), create_point(
+        stamp=dt.datetime.now() + relativedelta(days=1),
+        value=1,
+    ))
     goal = Goal(name='Dummy', pledge=0, reference_points=reference_points)
     return goal
 
@@ -34,7 +33,7 @@ def test_initialized_goal_has_zero_datapoints(dummy_goal):
 
 
 def test_one_can_add_a_datapoint(dummy_goal):
-    point = Point(stamp=dt.datetime.now(), value=1, comment='')
+    point = create_point(stamp=dt.datetime.now(), value=1)
     dummy_goal.add_point(point)
     assert len(dummy_goal.datapoints) == 1
     assert dummy_goal.datapoints[0] == point
@@ -42,10 +41,15 @@ def test_one_can_add_a_datapoint(dummy_goal):
 
 def test_one_can_add_multiple_datapoints_and_they_are_ordered_in_time(
         dummy_goal):
-    later_point = Point(stamp=dt.datetime.now(), value=2, comment='')
+    later_point = create_point(
+        stamp=dt.datetime.now(),
+        value=2,
+    )
     dummy_goal.add_point(later_point)
-    earlier_point = Point(
-        stamp=dt.datetime.now() - relativedelta(days=1), value=3, comment='')
+    earlier_point = create_point(
+        stamp=dt.datetime.now() - relativedelta(days=1),
+        value=3,
+    )
     dummy_goal.add_point(earlier_point)
     assert len(dummy_goal.datapoints) == 2
     assert dummy_goal.datapoints[0] == earlier_point
@@ -53,8 +57,10 @@ def test_one_can_add_multiple_datapoints_and_they_are_ordered_in_time(
 
 
 def test_one_can_add_reference_points_and_they_are_ordered_in_time(dummy_goal):
-    earlier_point = Point(
-        stamp=dt.datetime.now() - relativedelta(days=1), value=-1, comment='')
+    earlier_point = create_point(
+        stamp=dt.datetime.now() - relativedelta(days=1),
+        value=-1,
+    )
     dummy_goal.add_reference_point(earlier_point)
     assert len(dummy_goal.reference_points) == 3
     assert dummy_goal.reference_points[0] == earlier_point
@@ -62,7 +68,10 @@ def test_one_can_add_reference_points_and_they_are_ordered_in_time(dummy_goal):
 
 @pytest.fixture
 def one_goal(dummy_goal):
-    point = Point(stamp=dt.datetime.now(), value=1, comment='')
+    point = create_point(
+        stamp=dt.datetime.now(),
+        value=1,
+    )
     dummy_goal.add_point(point)
     return dummy_goal
 
@@ -125,7 +134,7 @@ def test_hash_of_goals_with_different_reference_points_are_not_the_same(
         one_goal, one_goal_clone):
     one_goal_clone.reference_points = tuple(
         list(one_goal_clone.reference_points) +
-        [Point(stamp=0, value=0, comment='')])
+        [create_point(stamp=0, value=0)])
     assert hash(one_goal_clone) != hash(one_goal)
 
 
@@ -137,10 +146,10 @@ def test_can_parse_goal_from_yaml(one_goal, tmpfile):
 
 def test_value_for_simple_cumulative_goal_is_correct(dummy_goal):
     assert dummy_goal.value() == 0
-    point = Point(stamp=dt.datetime.now(), value=1, comment='')
+    point = create_point(stamp=dt.datetime.now(), value=1)
     dummy_goal.add_point(point)
     assert dummy_goal.value() == 1
-    point = Point(stamp=dt.datetime.now(), value=100, comment='')
+    point = create_point(stamp=dt.datetime.now(), value=100)
     dummy_goal.add_point(point)
     assert dummy_goal.value() == 101
 
@@ -152,11 +161,11 @@ def test_remaining_time_is_correct_for_simple_line(one_goal):
 
 
 def test_remaining_time_is_correct_more_complex_line(one_goal):
-    point = Point(
-        stamp=dt.datetime.now() + relativedelta(days=2), value=10, comment='')
+    point = create_point(
+        stamp=dt.datetime.now() + relativedelta(days=2), value=10)
     one_goal.add_reference_point(point)
-    point = Point(
-        stamp=dt.datetime.now() - relativedelta(days=2), value=-10, comment='')
+    point = create_point(
+        stamp=dt.datetime.now() - relativedelta(days=2), value=-10)
     one_goal.add_reference_point(point)
     expected_time = one_goal.reference_points[-2].stamp - dt.datetime.now()
     assert abs(one_goal.time_remaining(dt.datetime.now()) -
@@ -178,17 +187,15 @@ def test_create_goal_from_slope():
     assert p2.value == (p2.stamp - p1.stamp).days * 10
 
 
-def test_point_hash_is_always_the_same(one_goal):
-    point = create_point(1)
-    other_point = Point(
-        value=point.value, stamp=point.stamp, comment=point.comment)
-    assert point_hash(point) == point_hash(other_point)
+def test_point_id_is_different_from_point_to_point():
+    point1 = create_point(1)
+    point2 = create_point(2)
+    assert point1.uuid != point2.uuid
 
 
 def test_can_delete_datapoint_with_part_of_hash(one_goal):
     point = one_goal.datapoints[0]
-    p_hash = point_hash(point)
-    one_goal.remove_point(p_hash[:-2])
+    one_goal.remove_point(point.uuid[:5])
     assert len(one_goal.datapoints) == 0
 
 
@@ -198,7 +205,7 @@ def test_can_delete_raises_error_if_hash_does_not_match(one_goal):
 
 
 def test_can_delete_raises_error_if_multiple_hashes_match(one_goal):
-    point = Point(stamp=dt.datetime.now(), value=1, comment='')
+    point = create_point(stamp=dt.datetime.now(), value=1)
     one_goal.add_point(point)
     with pytest.raises(KeyError):
         one_goal.remove_point('')

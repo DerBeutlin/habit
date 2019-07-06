@@ -2,19 +2,16 @@ from collections import namedtuple
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import yaml
+from uuid import uuid4
 
-Point = namedtuple('Point', ['stamp', 'value', 'comment'])
+Point = namedtuple('Point', ['stamp', 'value', 'comment', 'uuid'])
 
 
 def create_point(value, stamp=None, comment=''):
     if stamp is None:
         stamp = dt.datetime.now()
-    return Point(stamp=stamp, value=value, comment=comment)
-
-
-def point_hash(point):
-    return hex(hash(point))[2:10]
-
+    uuid = str(uuid4())
+    return Point(stamp=stamp, value=value, comment=comment, uuid=uuid)
 
 def add_point_to_sorted_tuple(t, p):
     new_t = list(t) + [p]
@@ -71,15 +68,15 @@ class Goal():
         self.datapoints = add_point_to_sorted_tuple(self.datapoints, point)
 
     @_update("Removed datapoint")
-    def remove_point(self, p_hash):
+    def remove_point(self, uuid):
         candidates = [
-            d for d in self.datapoints if point_hash(d).startswith(p_hash)
+            d for d in self.datapoints if d.uuid.startswith(uuid)
         ]
         if not candidates:
-            raise KeyError('No match for hash {} found'.format(p_hash))
+            raise KeyError('No match for uuid {} found'.format(uuid))
         if len(candidates) > 1:
-            raise KeyError('There are multiple matches for hash {}, '.format(
-                p_hash) + ','.join((point_hash(p) for p in candidates)))
+            raise KeyError('There are multiple matches for uuid {}, '.format(
+                uuid) + ','.join((p.uuid for p in candidates)))
 
         self.datapoints = tuple(
             d for d in self.datapoints if d != candidates[0])
@@ -128,7 +125,7 @@ class Goal():
 
 def create_goal(name, daily_slope, pledge):
     now = dt.datetime.now()
-    p1 = Point(stamp=now, value=0, comment='')
+    p1 = create_point(stamp=now, value=0)
     end = now + relativedelta(years=10)
-    p2 = Point(stamp=end, value=(end - now).days * daily_slope, comment='')
+    p2 = create_point(stamp=end, value=(end - now).days * daily_slope)
     return Goal(name=name, reference_points=(p1, p2), pledge=pledge)

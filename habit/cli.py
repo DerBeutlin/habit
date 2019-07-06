@@ -2,7 +2,7 @@
 """Console script for habit."""
 import click
 from habit.store import DataStore
-from habit.goal import create_goal, create_point, point_hash
+from habit.goal import create_goal, create_point
 import os
 import tabulate
 import multiprocessing.dummy
@@ -83,7 +83,7 @@ def add(name, value, comment=''):
 def list(name):
     store = DataStore(os.getcwd())
     goal = load_goal(store, name)
-    table = [[point_hash(d), d.value,
+    table = [[d.uuid[:8], d.value,
               d.stamp.isoformat(), d.comment] for d in goal.datapoints]
     print(
         tabulate.tabulate(table, headers=['Hash', 'Value', 'Time', 'Comment']))
@@ -91,13 +91,13 @@ def list(name):
 
 @main.command()
 @click.argument('name')
-@click.argument('hash')
-def remove(name, hash):
+@click.argument('uuid')
+def remove(name, uuid):
     store = DataStore(os.getcwd())
     goal = load_goal(store, name)
     try:
-        goal.remove_point(hash)
-        print('Point with hash {} removed successfully!'.format(hash))
+        goal.remove_point(uuid)
+        print('Point with uuid {} removed successfully!'.format(hash))
     except KeyError as e:
         print(e)
         exit(1)

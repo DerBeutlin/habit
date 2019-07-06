@@ -10,7 +10,7 @@ from git.exc import InvalidGitRepositoryError
 from tests.test_goal import dummy_goal
 
 from habit.store import DataStore
-from habit.goal import Point,point_hash
+from habit.goal import create_point
 import datetime as dt
 
 
@@ -64,8 +64,10 @@ def one_goal_datastore(empty_datastore, dummy_goal):
     dummy_goal.set_store(empty_datastore)
     return empty_datastore
 
+
 def test_one_goal_datastore_has_one_goal(one_goal_datastore):
     assert len(one_goal_datastore.list_goal_names()) == 1
+
 
 def test_add_goal_raises_Error_if_goal_with_same_name_exists(
         one_goal_datastore, dummy_goal):
@@ -110,7 +112,7 @@ def test_store_raises_error_when_loading_a_nonexistent_goal(
 
 def test_store_makes_commit_when_goal_adds_a_datapoint(one_goal_datastore):
     old_head_commit = one_goal_datastore.repo.head.commit
-    point = Point(value=1, stamp=dt.datetime.now(), comment='')
+    point = create_point(value=1, stamp=dt.datetime.now())
     goal = one_goal_datastore.load_goal('Dummy')
     goal.add_point(point)
     assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
@@ -118,13 +120,13 @@ def test_store_makes_commit_when_goal_adds_a_datapoint(one_goal_datastore):
     assert old_head_commit != new_head_commit
     assert new_head_commit.parents[0] == old_head_commit
 
+
 def test_store_makes_commit_when_goal_removes_a_datapoint(one_goal_datastore):
     goal = one_goal_datastore.load_goal('Dummy')
-    point = Point(value=1, stamp=dt.datetime.now(), comment='')
+    point = create_point(value=1, stamp=dt.datetime.now())
     goal.add_point(point)
     old_head_commit = one_goal_datastore.repo.head.commit
-    p_hash = point_hash(point)
-    goal.remove_point(p_hash)
+    goal.remove_point(point.uuid[:5])
     assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
     new_head_commit = one_goal_datastore.repo.head.commit
     assert old_head_commit != new_head_commit
