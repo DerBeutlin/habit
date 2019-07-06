@@ -1,5 +1,5 @@
 import pytest
-from habit.goal import Goal, Point, create_goal,point_hash
+from habit.goal import Goal, Point, create_goal, point_hash, create_point
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import tempfile
@@ -9,7 +9,10 @@ import os
 
 @pytest.fixture
 def dummy_goal():
-    reference_points = (Point(stamp=dt.datetime.now()+relativedelta(minutes=-1), value=0, comment=''),
+    reference_points = (Point(
+        stamp=dt.datetime.now() + relativedelta(minutes=-1),
+        value=0,
+        comment=''),
                         Point(
                             stamp=dt.datetime.now() + relativedelta(days=1),
                             value=1,
@@ -131,6 +134,7 @@ def test_can_parse_goal_from_yaml(one_goal, tmpfile):
     clone = Goal.fromYAML(tmpfile)
     assert one_goal == clone
 
+
 def test_value_for_simple_cumulative_goal_is_correct(dummy_goal):
     assert dummy_goal.value() == 0
     point = Point(stamp=dt.datetime.now(), value=1, comment='')
@@ -168,10 +172,18 @@ def test_create_goal_from_slope():
     assert len(goal.reference_points) == 2
     p1, p2 = goal.reference_points
     assert (p1.stamp - dt.datetime.now()) < dt.timedelta(seconds=1)
-    assert (p2.stamp - (dt.datetime.now() +
-                        relativedelta(years=10))) < dt.timedelta(seconds=1)
+    assert (p2.stamp - (dt.datetime.now() + relativedelta(years=10))
+            ) < dt.timedelta(seconds=1)
     assert p1.value == 0
     assert p2.value == (p2.stamp - p1.stamp).days * 10
+
+
+def test_point_hash_is_always_the_same(one_goal):
+    point = create_point(1)
+    other_point = Point(
+        value=point.value, stamp=point.stamp, comment=point.comment)
+    assert point_hash(point) == point_hash(other_point)
+
 
 def test_can_delete_datapoint_with_part_of_hash(one_goal):
     point = one_goal.datapoints[0]
@@ -179,9 +191,11 @@ def test_can_delete_datapoint_with_part_of_hash(one_goal):
     one_goal.remove_point(p_hash[:-2])
     assert len(one_goal.datapoints) == 0
 
+
 def test_can_delete_raises_error_if_hash_does_not_match(one_goal):
     with pytest.raises(KeyError):
         one_goal.remove_point('eanetianet')
+
 
 def test_can_delete_raises_error_if_multiple_hashes_match(one_goal):
     point = Point(stamp=dt.datetime.now(), value=1, comment='')

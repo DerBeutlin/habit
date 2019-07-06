@@ -106,3 +106,12 @@ def test_can_list_datapoints_with_hash(run_in_one_goal_store_with_one_point):
     goal = Goal.fromYAML('dummy.yaml')
     point = goal.datapoints[0]
     assert point_hash(point) in result.output
+
+def test_can_remove_datapoint_with_hash(run_in_one_goal_store_with_one_point):
+    run = run_in_one_goal_store_with_one_point
+    goal = Goal.fromYAML('dummy.yaml')
+    point = goal.datapoints[0]
+    p_hash = point_hash(point)[:-3]
+    result = run.invoke(main, ['remove', 'dummy',p_hash])
+    assert result.exit_code == 0
+    assert 'removed successfully!' in result.output
