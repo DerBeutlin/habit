@@ -4,12 +4,15 @@ from dateutil.relativedelta import relativedelta
 import yaml
 from uuid import uuid4
 
+def chop_microseconds(delta):
+    return delta - dt.timedelta(microseconds=delta.microseconds)
+
 Point = namedtuple('Point', ['stamp', 'value', 'comment', 'uuid'])
 
 
 def create_point(value, stamp=None, comment=''):
     if stamp is None:
-        stamp = dt.datetime.now()
+        stamp = dt.datetime.now().replace(microsecond=0)
     uuid = str(uuid4())
     return Point(stamp=stamp, value=value, comment=comment, uuid=uuid)
 
@@ -107,8 +110,9 @@ class Goal():
             dy = end_point.value - start_point.value
             dx = end_point.stamp - start_point.stamp
 
-            return (((self.value() - start_point.value) / dy) * dx) - (
+            delta =  (((self.value() - start_point.value) / dy) * dx) - (
                 now - start_point.stamp)
+            return chop_microseconds(delta)
 
     def toYAML(self, path):
         with open(path, 'w') as f:
