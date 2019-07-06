@@ -107,10 +107,45 @@ def test_can_list_datapoints_with_uuid(run_in_one_goal_store_with_one_point):
     point = goal.datapoints[0]
     assert point.uuid[:8] in result.output
 
-def test_can_remove_datapoint_with_hash(run_in_one_goal_store_with_one_point):
+def test_can_remove_datapoint_with_uuid(run_in_one_goal_store_with_one_point):
     run = run_in_one_goal_store_with_one_point
     goal = Goal.fromYAML('dummy.yaml')
     point = goal.datapoints[0]
     result = run.invoke(main, ['remove', 'dummy',point.uuid[:5]])
     assert result.exit_code == 0
     assert 'removed successfully!' in result.output
+    goal = Goal.fromYAML('dummy.yaml')
+    assert len(goal.datapoints) == 0
+
+def test_can_edit_datapoint_value(run_in_one_goal_store_with_one_point):
+    run = run_in_one_goal_store_with_one_point
+    goal = Goal.fromYAML('dummy.yaml')
+    point = goal.datapoints[0]
+    result = run.invoke(main, ['edit', 'dummy', point.uuid[:5] ,'-v', '123'])
+    assert result.exit_code == 0
+    assert 'edited successfully!' in result.output
+    goal = Goal.fromYAML('dummy.yaml')
+    point = goal.datapoints[0]
+    assert point.value == 123
+
+def test_can_edit_datapoint_comment(run_in_one_goal_store_with_one_point):
+    run = run_in_one_goal_store_with_one_point
+    goal = Goal.fromYAML('dummy.yaml')
+    point = goal.datapoints[0]
+    result = run.invoke(main, ['edit', 'dummy', point.uuid[:5], '-c','bar'])
+    assert result.exit_code == 0
+    assert 'edited successfully!' in result.output
+    goal = Goal.fromYAML('dummy.yaml')
+    point = goal.datapoints[0]
+    assert point.comment == 'bar'
+
+def test_can_edit_datapoint_time(run_in_one_goal_store_with_one_point):
+    run = run_in_one_goal_store_with_one_point
+    goal = Goal.fromYAML('dummy.yaml')
+    point = goal.datapoints[0]
+    result = run.invoke(main, ['edit', 'dummy', point.uuid[:5] , '-t', '1 min ago'])
+    assert result.exit_code == 0
+    assert 'edited successfully!' in result.output
+    goal = Goal.fromYAML('dummy.yaml')
+    point = goal.datapoints[0]
+    assert abs(point.stamp-dt.datetime.now()+dt.timedelta(minutes=1)) < dt.timedelta(seconds=5)

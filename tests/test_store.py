@@ -131,3 +131,14 @@ def test_store_makes_commit_when_goal_removes_a_datapoint(one_goal_datastore):
     new_head_commit = one_goal_datastore.repo.head.commit
     assert old_head_commit != new_head_commit
     assert new_head_commit.parents[0] == old_head_commit
+
+def test_store_makes_commit_when_goal_edits_a_datapoint(one_goal_datastore):
+    goal = one_goal_datastore.load_goal('Dummy')
+    point = create_point(value=1, stamp=dt.datetime.now())
+    goal.add_point(point)
+    old_head_commit = one_goal_datastore.repo.head.commit
+    goal.edit_point(point.uuid[:5],value='999')
+    assert not one_goal_datastore.repo.is_dirty(untracked_files=True)
+    new_head_commit = one_goal_datastore.repo.head.commit
+    assert old_head_commit != new_head_commit
+    assert new_head_commit.parents[0] == old_head_commit

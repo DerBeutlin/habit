@@ -209,3 +209,16 @@ def test_can_delete_raises_error_if_multiple_hashes_match(one_goal):
     one_goal.add_point(point)
     with pytest.raises(KeyError):
         one_goal.remove_point('')
+
+def test_can_edit_datapoint_with_part_of_hash(one_goal):
+    point = one_goal.datapoints[0]
+    one_goal.edit_point(point.uuid[:5],value=999)
+    point = one_goal.datapoints[0]
+    assert point.value == 999
+    yesterday = dt.datetime.now() - relativedelta(days=1)
+    one_goal.edit_point(point.uuid[:5],stamp=yesterday)
+    point = one_goal.datapoints[0]
+    assert point.stamp == yesterday
+    one_goal.edit_point(point.uuid[:5],comment='foo')
+    point = one_goal.datapoints[0]
+    assert point.comment == 'foo'

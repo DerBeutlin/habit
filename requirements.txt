@@ -2,3 +2,4 @@ gitpython
 click
 python-dateutil
 tabulate
+dateparser

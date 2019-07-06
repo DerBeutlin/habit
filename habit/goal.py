@@ -13,6 +13,7 @@ def create_point(value, stamp=None, comment=''):
     uuid = str(uuid4())
     return Point(stamp=stamp, value=value, comment=comment, uuid=uuid)
 
+
 def add_point_to_sorted_tuple(t, p):
     new_t = list(t) + [p]
     new_t.sort(key=lambda d: d.stamp)
@@ -35,8 +36,8 @@ class Goal():
 
     def _update(commit_msg):
         def wrapper(func):
-            def wrapped_f(s, *args):
-                func(s, *args)
+            def wrapped_f(s, *args, **kwargs):
+                func(s, *args, **kwargs)
                 if s.store:
                     s.store.update_goal(
                         s, 'Goal {}: {}'.format(s.name, commit_msg))
@@ -69,17 +70,30 @@ class Goal():
 
     @_update("Removed datapoint")
     def remove_point(self, uuid):
-        candidates = [
-            d for d in self.datapoints if d.uuid.startswith(uuid)
-        ]
+
+        point = self.find_datapoint(uuid)
+        self.datapoints = tuple(d for d in self.datapoints if d != point)
+
+    @_update("Edited datapoint")
+    def edit_point(self, uuid, value=None, stamp=None, comment=None):
+        point = self.find_datapoint(uuid)
+        self.datapoints = tuple(d for d in self.datapoints if d != point)
+        if value is not None:
+            point = point._replace(value=value)
+        if stamp is not None:
+            point = point._replace(stamp=stamp)
+        if comment is not None:
+            point = point._replace(comment=comment)
+        self.datapoints = add_point_to_sorted_tuple(self.datapoints, point)
+
+    def find_datapoint(self, uuid):
+        candidates = [d for d in self.datapoints if d.uuid.startswith(uuid)]
         if not candidates:
             raise KeyError('No match for uuid {} found'.format(uuid))
         if len(candidates) > 1:
             raise KeyError('There are multiple matches for uuid {}, '.format(
                 uuid) + ','.join((p.uuid for p in candidates)))
-
-        self.datapoints = tuple(
-            d for d in self.datapoints if d != candidates[0])
+        return candidates[0]
 
     def add_reference_point(self, point):
         self.reference_points = add_point_to_sorted_tuple(

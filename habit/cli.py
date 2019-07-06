@@ -8,6 +8,7 @@ import tabulate
 import multiprocessing.dummy
 import sys
 import datetime as dt
+from dateparser import parse as dparse
 
 
 @click.group()
@@ -97,7 +98,34 @@ def remove(name, uuid):
     goal = load_goal(store, name)
     try:
         goal.remove_point(uuid)
-        print('Point with uuid {} removed successfully!'.format(hash))
+        print('Point with uuid {} removed successfully!'.format(uuid))
+    except KeyError as e:
+        print(e)
+        exit(1)
+
+
+@main.command()
+@click.argument('name')
+@click.argument('uuid')
+@click.option('-v', '--value', 'value', help='The new value', default=None)
+@click.option(
+    '-t',
+    '--time',
+    'time',
+    help='The new time, either as absolute value or relative to now',
+    default=None)
+@click.option(
+    '-c', '--comment', 'comment', help='The new comment', default=None)
+def edit(name, uuid, value, time, comment):
+    store = DataStore(os.getcwd())
+    goal = load_goal(store, name)
+    try:
+        if time is not None:
+            time = dparse(time)
+        if value is not None:
+            value = float(value)
+        goal.edit_point(uuid, value=value, comment=comment, stamp=time)
+        print('Point with uuid {} edited successfully!'.format(uuid))
     except KeyError as e:
         print(e)
         exit(1)
