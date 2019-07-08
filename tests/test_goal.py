@@ -173,7 +173,7 @@ def test_remaining_time_is_correct_more_complex_line(one_goal):
 
 
 def test_create_goal_from_slope():
-    goal = create_goal(name='Dummy', daily_slope=10, pledge=10)
+    goal = create_goal(name='Dummy', daily_slope=10, pledge=10,initial_pause_days=1)
     assert goal.name == 'Dummy'
     assert goal.pledge == 10
     assert goal.active
@@ -183,8 +183,8 @@ def test_create_goal_from_slope():
     assert (p1.stamp - dt.datetime.now()) < dt.timedelta(seconds=1)
     assert (p2.stamp - (dt.datetime.now() + relativedelta(years=10))
             ) < dt.timedelta(seconds=1)
-    assert p1.value == 0
-    assert p2.value == (p2.stamp - p1.stamp).days * 10
+    assert p1.value == -10
+    assert p2.value == ((p2.stamp - p1.stamp).days-1) * 10
 
 
 def test_point_id_is_different_from_point_to_point():

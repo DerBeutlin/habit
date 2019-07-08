@@ -4,8 +4,10 @@ from dateutil.relativedelta import relativedelta
 import yaml
 from uuid import uuid4
 
+
 def chop_microseconds(delta):
     return delta - dt.timedelta(microseconds=delta.microseconds)
+
 
 Point = namedtuple('Point', ['stamp', 'value', 'comment', 'uuid'])
 
@@ -110,7 +112,7 @@ class Goal():
             dy = end_point.value - start_point.value
             dx = end_point.stamp - start_point.stamp
 
-            delta =  (((self.value() - start_point.value) / dy) * dx) - (
+            delta = (((self.value() - start_point.value) / dy) * dx) - (
                 now - start_point.stamp)
             return chop_microseconds(delta)
 
@@ -141,9 +143,10 @@ class Goal():
         return goal
 
 
-def create_goal(name, daily_slope, pledge):
+def create_goal(name, daily_slope, pledge, initial_pause_days=3):
     now = dt.datetime.now()
-    p1 = create_point(stamp=now, value=0)
+    p1 = create_point(stamp=now, value=-initial_pause_days * daily_slope)
     end = now + relativedelta(years=10)
-    p2 = create_point(stamp=end, value=(end - now).days * daily_slope)
+    p2 = create_point(
+        stamp=end, value=((end - now).days - initial_pause_days) * daily_slope)
     return Goal(name=name, reference_points=(p1, p2), pledge=pledge)

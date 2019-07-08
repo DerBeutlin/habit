@@ -30,9 +30,18 @@ def init():
 @click.argument('name')
 @click.option('--slope', 'slope', default=1, help='Daily value increase')
 @click.option('--pledge', 'pledge', default=0, help='Starting Pledge')
-def new(name, slope, pledge):
+@click.option(
+    '--initial-pause',
+    'initial_pause',
+    default=3,
+    help='Number of flat days in the beginning')
+def new(name, slope, pledge, initial_pause):
     store = DataStore(os.getcwd())
-    goal = create_goal(name=name, daily_slope=slope, pledge=pledge)
+    goal = create_goal(
+        name=name,
+        daily_slope=slope,
+        pledge=pledge,
+        initial_pause_days=initial_pause)
     try:
         goal.set_store(store)
         print(
